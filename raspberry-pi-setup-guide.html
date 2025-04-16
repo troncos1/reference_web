@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raspberry Pi 4 Setup Guide: SSH, ZeroTier, Apache, and PuTTY</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #e74c3c;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #27ae60;
+            margin-top: 20px;
+        }
+        code {
+            background-color: #f7f7f7;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #f7f7f7;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        .note {
+            background-color: #f9f9f9;
+            border-left: 4px solid #2980b9;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #fff8dc;
+            border-left: 4px solid #e67e22;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .toc {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        .toc ul {
+            padding-left: 20px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Raspberry Pi 4 (8GB) Setup Guide</h1>
+    <p>This guide provides step-by-step instructions for setting up your Raspberry Pi 4 (8GB) with SSH, ZeroTier, Apache, and PuTTY for remote connections.</p>
+    
+    <div class="toc">
+        <h3>Table of Contents</h3>
+        <ul>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#enable-ssh">Enabling SSH on Raspberry Pi</a></li>
+            <li><a href="#putty-setup">Setting Up PuTTY for SSH Connections</a></li>
+            <li><a href="#zerotier-install">Installing and Configuring ZeroTier</a></li>
+            <li><a href="#apache-install">Installing Apache Web Server</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ul>
+    </div>
+    
+    <div id="prerequisites" class="section">
+        <h2>Prerequisites</h2>
+        <p>Before you begin, ensure you have the following:</p>
+        <ul>
+            <li>Raspberry Pi 4 (8GB) with Raspberry Pi OS installed</li>
+            <li>Power supply for your Raspberry Pi</li>
+            <li>MicroSD card (16GB or larger recommended)</li>
+            <li>Internet connection (Ethernet or Wi-Fi)</li>
+            <li>A computer to access your Raspberry Pi remotely</li>
+            <li>Basic knowledge of Linux commands</li>
+        </ul>
+    </div>
+    
+    <div id="enable-ssh" class="section">
+        <h2>1. Enabling SSH on Raspberry Pi</h2>
+        
+        <p>SSH (Secure Shell) allows you to remotely access and control your Raspberry Pi from another computer.</p>
+        
+        <h3>Method 1: Enable SSH during OS installation</h3>
+        <p>If you're using Raspberry Pi Imager to flash your SD card:</p>
+        <ol>
+            <li>After selecting your operating system and storage, click the gear icon (⚙️) to access advanced options</li>
+            <li>Check "Enable SSH" and set a username and password</li>
+            <li>Write the image to your SD card</li>
+        </ol>
+        
+        <h3>Method 2: Enable SSH on an existing installation</h3>
+        <p>If you already have Raspberry Pi OS installed:</p>
+        <ol>
+            <li>Boot your Raspberry Pi</li>
+            <li>Open the terminal and run:</li>
+        </ol>
+        <pre>sudo raspi-config</pre>
+        <ol start="3">
+            <li>Navigate to "Interface Options" > "SSH" and select "Yes"</li>
+            <li>Select "Finish" and reboot if prompted</li>
+        </ol>
+        
+        <h3>Method 3: Headless setup (no monitor)</h3>
+        <p>If you don't have a monitor connected to your Raspberry Pi:</p>
+        <ol>
+            <li>After flashing the SD card, don't eject it</li>
+            <li>Create an empty file named "ssh" (no extension) in the boot partition</li>
+            <li>For Windows, you can use Notepad to create a file and save it as "ssh" without any extension</li>
+            <li>For macOS/Linux, you can use the touch command: <code>touch /Volumes/boot/ssh</code></li>
+        </ol>
+        
+        <h3>Finding your Raspberry Pi's IP address</h3>
+        <p>To connect to your Raspberry Pi, you need its IP address. You can find it by:</p>
+        <ul>
+            <li>Checking your router's admin page for connected devices</li>
+            <li>Using a network scanner like Angry IP Scanner</li>
+            <li>If you have a monitor connected, run <code>hostname -I</code> in the terminal</li>
+        </ul>
+    </div>
+    
+    <div id="putty-setup" class="section">
+        <h2>2. Setting Up PuTTY for SSH Connections</h2>
+        
+        <h3>Installing PuTTY</h3>
+        <ol>
+            <li>Download PuTTY from the <a href="https://www.putty.org/" target="_blank">official website</a></li>
+            <li>Run the installer and follow the prompts</li>
+        </ol>
+        
+        <h3>Connecting to your Raspberry Pi with PuTTY</h3>
+        <ol>
+            <li>Open PuTTY</li>
+            <li>In the "Host Name" field, enter your Raspberry Pi's IP address</li>
+            <li>Ensure the port is set to 22 (the default SSH port)</li>
+            <li>Type a name for this connection in the "Saved Sessions" field (e.g., "Raspberry Pi")</li>
+            <li>Click "Save" to save this configuration</li>
+            <li>Click "Open" to start the connection</li>
+        </ol>
+        
+        <p>When connecting for the first time, you'll see a security alert about the server's host key. Click "Yes" to continue.</p>
+        
+        <h3>Logging in</h3>
+        <ol>
+            <li>Enter your username (default is "pi" for older installations or the username you chose during setup)</li>
+            <li>Enter your password (default is "raspberry" if you didn't change it)</li>
+            <li>Note: The password will not be visible as you type</li>
+        </ol>
+        
+        <div class="note">
+            <p><strong>Security Tip:</strong> If you're still using the default username and password, change them immediately using the <code>passwd</code> command.</p>
+        </div>
+    </div>
+    
+    <div id="zerotier-install" class="section">
+        <h2>3. Installing and Configuring ZeroTier</h2>
+        
+        <p>ZeroTier allows you to create a secure virtual network that connects your devices, even behind NATs or firewalls.</p>
+        
+        <h3>Installing ZeroTier on Raspberry Pi</h3>
+        <ol>
+            <li>Connect to your Raspberry Pi via SSH using PuTTY</li>
+            <li>Update your package lists:</li>
+        </ol>
+        <pre>sudo apt update
+sudo apt upgrade -y</pre>
+        
+        <ol start="3">
+            <li>Install curl if it's not already installed:</li>
+        </ol>
+        <pre>sudo apt install curl -y</pre>
+        
+        <ol start="4">
+            <li>Download and install ZeroTier:</li>
+        </ol>
+        <pre>curl -s https://install.zerotier.com | sudo bash</pre>
+        
+        <h3>Creating a ZeroTier Network</h3>
+        <ol>
+            <li>Create a ZeroTier account at <a href="https://my.zerotier.com/" target="_blank">https://my.zerotier.com/</a></li>
+            <li>Log in and click "Create A Network"</li>
+            <li>Note the Network ID that is generated (it will look something like "8056c2e21c000001")</li>
+        </ol>
+        
+        <h3>Joining Your Raspberry Pi to the ZeroTier Network</h3>
+        <ol>
+            <li>On your Raspberry Pi, join the network using the Network ID:</li>
+        </ol>
+        <pre>sudo zerotier-cli join YOUR_NETWORK_ID</pre>
+        
+        <ol start="2">
+            <li>Go back to the ZeroTier web interface</li>
+            <li>In your network page, find your Raspberry Pi in the "Members" section</li>
+            <li>Check the "Auth" checkbox to authorize the device</li>
+            <li>Give your device a name for easy identification</li>
+        </ol>
+        
+        <h3>Testing the Connection</h3>
+        <ol>
+            <li>On your Raspberry Pi, check that ZeroTier is running:</li>
+        </ol>
+        <pre>sudo zerotier-cli status</pre>
+        
+        <ol start="2">
+            <li>Get your ZeroTier IP address:</li>
+        </ol>
+        <pre>sudo zerotier-cli listnetworks</pre>
+        
+        <p>Note the "assigned addresses" - this is your Raspberry Pi's ZeroTier IP address.</p>
+        
+        <h3>Configure ZeroTier to Start on Boot</h3>
+        <pre>sudo systemctl enable zerotier-one
+sudo systemctl start zerotier-one</pre>
+        
+        <div class="note">
+            <p><strong>Note:</strong> You can now connect to your Raspberry Pi using its ZeroTier IP address from any device that is also a member of the same ZeroTier network, regardless of where you are in the world!</p>
+        </div>
+    </div>
+    
+    <div id="apache-install" class="section">
+        <h2>4. Installing Apache Web Server</h2>
+        
+        <p>Apache is a popular web server that allows your Raspberry Pi to host websites.</p>
+        
+        <h3>Installing Apache</h3>
+        <ol>
+            <li>Connect to your Raspberry Pi via SSH using PuTTY</li>
+            <li>Update your package lists if you haven't recently:</li>
+        </ol>
+        <pre>sudo apt update</pre>
+        
+        <ol start="3">
+            <li>Install Apache:</li>
+        </ol>
+        <pre>sudo apt install apache2 -y</pre>
+        
+        <h3>Testing Apache Installation</h3>
+        <p>Apache should start automatically after installation. You can check its status with:</p>
+        <pre>sudo systemctl status apache2</pre>
+        
+        <p>To test if Apache is working correctly, open a web browser on any device on the same network and enter your Raspberry Pi's IP address. You should see the default Apache2 page.</p>
+        
+        <h3>Configure Apache</h3>
+        <p>The default web root directory is <code>/var/www/html</code>. Any files placed here will be served by Apache.</p>
+        
+        <ol>
+            <li>Change ownership of the web directory to allow easier file management:</li>
+        </ol>
+        <pre>sudo chown -R pi:www-data /var/www/html
+sudo chmod -R 750 /var/www/html</pre>
+        
+        <ol start="2">
+            <li>Create a simple test page:</li>
+        </ol>
+        <pre>echo '&lt;html&gt;&lt;body&gt;&lt;h1&gt;My Raspberry Pi Web Server&lt;/h1&gt;&lt;p&gt;Hello from my Raspberry Pi!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;' | sudo tee /var/www/html/index.html</pre>
+        
+        <h3>Accessing Your Web Server Remotely via ZeroTier</h3>
+        <p>After setting up ZeroTier, you can access your Apache web server from any device on your ZeroTier network:</p>
+        <ol>
+            <li>Open a web browser on a device that's part of your ZeroTier network</li>
+            <li>Enter your Raspberry Pi's ZeroTier IP address in the address bar</li>
+            <li>You should see the Apache webpage you created</li>
+        </ol>
+        
+        <div class="note">
+            <p><strong>Security Tip:</strong> By default, Apache is accessible to anyone who can reach your Raspberry Pi. Consider configuring a firewall and adjusting Apache's configuration for better security.</p>
+        </div>
+    </div>
+    
+    <div id="troubleshooting" class="section">
+        <h2>5. Troubleshooting</h2>
+        
+        <h3>SSH Connection Issues</h3>
+        <ul>
+            <li><strong>Cannot connect to Raspberry Pi:</strong> Make sure SSH is enabled and you're using the correct IP address and credentials</li>
+            <li><strong>Connection refused error:</strong> Ensure the SSH service is running with <code>sudo systemctl status ssh</code></li>
+            <li><strong>Authentication failure:</strong> Double-check your username and password</li>
+        </ul>
+        
+        <h3>ZeroTier Issues</h3>
+        <ul>
+            <li><strong>Cannot join network:</strong> Ensure you have internet access and the correct Network ID</li>
+            <li><strong>No IP address assigned:</strong> Check that you've authorized your device in the ZeroTier web interface</li>
+            <li><strong>Cannot connect between devices:</strong> Verify both devices are authorized and check your firewall settings</li>
+        </ul>
+        
+        <h3>Apache Issues</h3>
+        <ul>
+            <li><strong>Apache not starting:</strong> Check for errors with <code>sudo systemctl status apache2</code></li>
+            <li><strong>Cannot access web page:</strong> Ensure Apache is running and check your firewall settings</li>
+            <li><strong>Permission denied errors:</strong> Check file permissions in your web directory</li>
+        </ul>
+        
+        <h3>Useful Commands</h3>
+        <pre># Check SSH status
+sudo systemctl status ssh
+
+# Restart SSH
+sudo systemctl restart ssh
+
+# Check ZeroTier status
+sudo zerotier-cli status
+
+# Check ZeroTier networks
+sudo zerotier-cli listnetworks
+
+# Restart ZeroTier
+sudo systemctl restart zerotier-one
+
+# Check Apache status
+sudo systemctl status apache2
+
+# Restart Apache
+sudo systemctl restart apache2
+
+# Check open ports
+sudo netstat -tuln
+
+# Check your IP addresses
+ip addr show</pre>
+    </div>
+    
+    <div class="section">
+        <h2>Conclusion</h2>
+        <p>You now have a Raspberry Pi 4 with SSH enabled for remote access via PuTTY, ZeroTier set up for secure remote connections from anywhere, and Apache installed for hosting web content.</p>
+        <p>This setup allows you to:</p>
+        <ul>
+            <li>Remotely manage your Raspberry Pi from anywhere using SSH</li>
+            <li>Access your Raspberry Pi securely over the internet using ZeroTier</li>
+            <li>Host websites and web applications using Apache</li>
+        </ul>
+        <p>Consider exploring additional projects like setting up a personal cloud server, media server, or home automation system!</p>
+    </div>
+</body>
+</html>
